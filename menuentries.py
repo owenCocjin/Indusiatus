@@ -1,8 +1,10 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.1
+## Version: 0.2
 ## Date:    2021.06.23
 ## Description:    Menu entries for progmenu
+## Updates:
+##  - Updated help
 from ProgMenu.progmenu import EntryFlag, EntryArg
 
 def filterFunc(f):
@@ -10,7 +12,7 @@ def filterFunc(f):
 Split args with semi-colon.'''
 	return f.split(';')
 def helpFunc():
-	print('''    evildict.py [-h]
+	print('''    evildict.py -a <host device> [-fhlopr]
 MitM attack to modify a dictionary return to slate quizzes.
   -f; --filter=<sTv>: Filter print results.
                       Syntax is: <s><t><v>
