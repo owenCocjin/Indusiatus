@@ -1,14 +1,18 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.1
-## Date:    2021.06.23
+## Version: 0.2
+## Date:    2021.06.24
 ## Description:    Payload data structured
 ## Notes:
 ##    - Includes a generic payload class
 ## Updates:
+##  - Added data_type and name to all classes
+
 class GENERICPayload():
 	def __init__(self, raw):
 		self.raw=raw
+		self.data_type="PAY"
+		self.name="GENERIC"
 		self.upper=None
 		self.length=len(raw)  #Length in bytes
 		self.colour='\033[43m'
@@ -26,6 +30,14 @@ Length: {self.length}
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getUpper(self):
 		return self.upper
 	def setUpper(self, new):

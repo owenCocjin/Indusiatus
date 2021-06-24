@@ -1,16 +1,20 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.1
-## Date:    2021.06.22
+## Version: 0.2
+## Date:    2021.06.24
 ## Description:    Frame data structure
 ## Notes:
 ## Updates:
+##  - Added data_type and name to all classes
+
 from .packetdata import *
 from .datatools import prettyHex
 class ETHFrame():
 	def __init__(self, raw):
 		'''Socket removes preamble SFD, and CRC footer (12 bytes total) from data.'''
 		self.raw=raw
+		self.data_type="ETH"
+		self.name="ETH"
 		dst=raw[:6].hex()
 		src=raw[6:12].hex()
 		self.dst_mac=':'.join([dst[b*2:b*2+2] for b in range(len(dst)//2)])
@@ -34,6 +38,14 @@ Type:       {hex(self.type)}({packet_names[self.type]})"""
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getDst_mac(self):
 		return self.dst_mac
 	def setDst_mac(self, new):

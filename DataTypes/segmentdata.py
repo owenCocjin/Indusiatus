@@ -1,16 +1,20 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.1
-## Date:    2021.06.23
+## Version: 0.2
+## Date:    2021.06.24
 ## Description:    Segment data structure
 ## Notes:
 ## Updates:
+##  - Added data_type and name to all classes
+
 from .datatools import splitByte, prettyHex
 from .payloaddata import *
 class ICMPSegment():
 	def __init__(self, raw):
 		'''Takes the raw packet'''
 		self.raw=raw
+		self.data_type="SEG"
+		self.name="ICMP"
 		self.type=raw[0]
 		self.code=raw[1]
 		self.icmp_checksum=int(raw[2:4].hex(),16)
@@ -19,7 +23,7 @@ class ICMPSegment():
 		self.colour='\033[46m'
 		self.txt_colour='\033[96m'
 		self.text="ICMP"
-		self.upper=None  #For compatability
+		self.upper=GENERICPayload(self.content)  #For compatability
 	def __str__(self):
 		return self.toStr()
 
@@ -33,6 +37,14 @@ Content:       {prettyHex(self.content[:8])}..."""
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getType(self):
 		return self.type
 	def setType(self, new):
@@ -75,6 +87,8 @@ Content:       {prettyHex(self.content[:8])}..."""
 class IGMPSegment():
 	def __init__(self, raw):
 		self.raw=raw
+		self.data_type="SEG"
+		self.name="IGMP"
 		buff=splitByte(raw[0])
 		self.version=int(buff[:4],2)
 		self.type=int(buff[4:],2)
@@ -99,6 +113,14 @@ IGMP Checksum: {self.igmp_checksum}"""
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getVersion(self):
 		return self.version
 	def setVersion(self, new):
@@ -146,6 +168,8 @@ class TCPSegment():
 	def __init__(self, raw):
 		'''Takes the raw packet'''
 		self.raw=raw
+		self.data_type="SEG"
+		self.name="TCP"
 		self.src_port=int(raw[0:2].hex(),16)
 		self.dst_port=int(raw[2:4].hex(),16)
 		self.seq_no=int(raw[4:8].hex(),16)
@@ -182,6 +206,14 @@ TCP Checksum: {self.tcp_checksum}"""
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getSrc_port(self):
 		return self.src_port
 	def setSrc_port(self, new):
@@ -250,6 +282,8 @@ class UDPSegment():
 Assumes no IP header exists.'''
 	def __init__(self, raw):
 		self.raw=raw
+		self.data_type="SEG"
+		self.name="UDP"
 		self.src_port=int(raw[:2].hex(),16)
 		self.dst_port=int(raw[2:4].hex(),16)
 		self.length=int(raw[4:6].hex(),16)  #Length includes UDP header
@@ -275,6 +309,14 @@ UDP Checksum: {self.udp_checksum}"""
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getSrc_port(self):
 		return self.src_port
 	def setSrc_port(self, new):

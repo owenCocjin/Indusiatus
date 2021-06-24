@@ -1,11 +1,13 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.2
-## Date:    2021.06.23
+## Version: 0.3
+## Date:    2021.06.24
 ## Description:    Packet data structure
 ## Notes:
 ## Updates:
 ##  - Added UDPSegment and ETHFrame classes
+##  - Added data_type and name to all classes
+
 from .segmentdata import *
 from .ipv6ext import *
 class IPPacket():
@@ -13,6 +15,8 @@ class IPPacket():
 		'''Takes the raw packet as data.
 This assumes it includes the IP headers'''
 		self.raw=raw
+		self.data_type="PACK"
+		self.name="IP"
 		buff=splitByte(raw[0])
 		self.version=int(buff[:4],2)
 		self.ihl=int(buff[4:],2)   #number of 4-byte blocks, min of 5
@@ -48,6 +52,14 @@ IP Checksum: {self.header_checksum}"""
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getVersion(self):
 		return self.version
 	def setVersion(self, new):
@@ -130,6 +142,8 @@ IP Checksum: {self.header_checksum}"""
 class IPv6Packet():
 	def __init__(self, raw):
 		self.raw=raw
+		self.data_type="PACK"
+		self.name="IPV6"
 		buff=''
 		for b in raw[:4]:
 			buff+=splitByte(b)
@@ -147,7 +161,7 @@ class IPv6Packet():
 		if self.next_hdr in segment_names:
 			self.upper=segment_objs[segment_names[self.next_hdr]](self.payload)
 		elif self.next_hdr in ext_header_names:
-			self.upper=ext_header_names[ext_headers[self.next_hdr]](self.payload)
+			self.upper=ext_headers[ext_header_names[self.next_hdr]](self.payload)
 		self.colour='\033[44m'
 		self.txt_colour='\033[94m'
 		self.text="IPv6"
@@ -165,6 +179,14 @@ Dest:        [{self.dst_addr}]"""
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getVersion(self):
 		return self.version
 	def setVersion(self, new):
@@ -227,6 +249,8 @@ Dest:        [{self.dst_addr}]"""
 class ARPPacket():
 	def __init__(self, raw):
 		self.raw=raw
+		self.data_type="PACK"
+		self.name="ARP"
 		self.ihl=7  #Used for compatability
 					 #Simply the length of the arp header (which has no payload)
 					 #no. of 4-byte blocks
@@ -258,6 +282,14 @@ Dest:          [{self.dst_mac}]({self.dst_ip})"""
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getIhl(self):
 		return self.ihl
 	def setIhl(self, new):

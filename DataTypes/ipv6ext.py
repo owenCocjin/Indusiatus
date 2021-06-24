@@ -1,22 +1,30 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.1
-## Date:    2021.06.23
+## Version: 0.3
+## Date:    2021.06.24
 ## Description:    IPv6 extension header classes
 ## Notes:
 ##  - Figure out how options work.
 ##    Will probably just print them on a line with HbH instead of cluttering pretty output
 ## Updates:
+##  - Made Exts check segment list for next headers
+##  - Added data_type and name to all classes
+
 from .datatools import prettyHex
 from .segmentdata import *
 class HBHExt():
 	def __init__(self, raw):
 		self.raw=raw
+		self.data_type="EXT"
+		self.name="HBH"
 		self.next_hdr=raw[0]
 		self.hel=raw[1]  #Header Extension Lenght; 8-byte blocks not including first 8 bytes
 		self.content=raw[2:8*(self.hel+1)]
 		self.payload=raw[8*(self.hel+1):]
-		self.upper=ext_headers[ext_header_names[self.next_hdr]](self.payload)
+		if self.next_hdr in segment_names:
+			self.upper=segment_objs[segment_names[self.next_hdr]](self.payload)
+		elif self.next_hdr in ext_header_names:
+			self.upper=ext_headers[ext_header_names[self.next_hdr]](self.payload)
 		self.colour='\033[41m'
 		self.txt_colour='\033[91m'
 		self.text="HbH"
@@ -32,6 +40,14 @@ No. of Options:     {len(self.option)}"""
 		return self.raw
 	def setRaw(self, new):
 		self.raw=new
+	def getData_type(self):
+		return self.data_type
+	def setData_type(self, new):
+		self.data_type=new
+	def getName(self):
+		return self.name
+	def setName(self, new):
+		self.name=new
 	def getNext_hdr(self):
 		return self.next_hdr
 	def setNext_hdr(self, new):
