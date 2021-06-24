@@ -1,9 +1,10 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.2
-## Date:    2021.06.23
+## Version: 0.3
+## Date:    2021.06.24
 ## Description:    Menu entries for progmenu
 ## Updates:
+##  - Updated help
 ##  - Updated help
 from ProgMenu.progmenu import EntryFlag, EntryArg
 
@@ -39,21 +40,22 @@ MitM attack to modify a dictionary return to slate quizzes.
                       Must use with --layer.
                       Overwrites existing files.
   -p; --pretty;       Formatted printing
-  -r; --raw:          Print the raw packet bytes''')
+  -r; --raw:          Print the raw packet bytes
+Output Files:
+  When writing output, the raw bytes will be preceded with the 4 bytes combo of:
+    0x3b 0xss 0xss 0x3b
+  Where 0xss is the total size of the written bytes.''')
     #-i; --ip:           Include the IP header
 	return True
 def outputFunc(l, o):
 	'''Returns output file if it exists, otherwise False'''
-	if l in "123":
-		return open(o, 'wb')
-	else:
-		return False
+	return open(o, 'wb')
 
 EntryArg("host", ['a', "host"], lambda a:str(a), strict=True)
 EntryArg("filter", ['f', "filter"], filterFunc)
 EntryFlag("help", ['h', "help"], helpFunc)
 #EntryFlag("ip", ['i', "ip"], lambda:True, default=False)
-EntryArg("layer", ['l', "layer"], lambda l:l)
+EntryArg("layer", ['l', "layer"], lambda l:int(l), default=0)
 EntryArg("output", ['o', "output"], outputFunc, recurse=["layer"])
 EntryFlag("pretty", ['p', "pretty", "formatted"], lambda:True)
 EntryFlag("raw", ['r', "raw"], lambda:True, default=False)
