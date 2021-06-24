@@ -1,14 +1,15 @@
 #!/usr/bin/python3
 ## Author:  Owen Cocjin
-## Version: 0.1
-## Date:    2021.06.23
-## Description:    MitM attack for Slate quizzes (and consequently Lockdown quizzes)
+## Version: 0.2
+## Date:    2021.06.24
+## Description:    Packet capturer
 ## Notes:
 ##  - Need to fix IPv6 and it's stupid header shieeee!
 ##  - Also would like to know how to test IPv6 stuff
 from ProgMenu.progmenu import MENU
+from data_writing import writeData
 import DataTypes as dtypes
-import menuentries, filter, data_writing
+import menuentries, filter
 import socket, time
 vprint=MENU.verboseSetup(['v', "verbose"])
 PARSER=MENU.parse(True, strict=True)
@@ -19,9 +20,6 @@ def main():
 	if PARSER["output"]==False:  #Explicitely False; Not called returns None
 		print(f"[|X:{vname}]: Couldn't write to output file! Either the layer flag is missing or the file is unaccessible.")
 		exit(1)
-	elif PARSER["output"]!=None:
-		vprint(f"[|X:{vname}]: Setting up writeData...")
-		writeData=data_writing.write_funcs[PARSER["layer"]]
 	vprint(f"[|X:{vname}]: Setting up raw socket...")
 	sock=socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x03))  #The 3 is to read all data, incoming & outgoing
 	sock.bind((PARSER["host"], 0))
@@ -40,7 +38,7 @@ def main():
 				print(f"\n    \033[100m[{getTime()}]\n[|X:{vname}:raw_socket]: Read {len(buff)} bytes from dev({cli[0]})! \033[0m")
 				printData(bundle)
 				if PARSER["output"]:
-					writeData(packet, segment, PARSER["output"])
+					writeData(PARSER["output"], bundle, PARSER["layer"])
 	else:
 		while True:
 			try:
@@ -51,7 +49,7 @@ def main():
 				continue
 			printData(bundle)
 			if PARSER["output"]:
-				writeData(packet, segment, PARSER["output"])
+				writeData(PARSER["output"], bundle, PARSER["layer"])
 
 def setup(sock):
 	'''Does all the setup.'''
@@ -94,6 +92,7 @@ def printData(data):
 
 def filterParse(buff, bundle):
 	'''Return True if contents pass the filter'''
+	bundle_classes=[type(b) for b in bundle]
 	for f in PARSER["filter"]:
 		symbol=f[0]
 		datatype=filter.dtype(f[1].upper(), bundle)
@@ -106,8 +105,7 @@ def filterParse(buff, bundle):
 			except ValueError:
 				print(f"[|X:{vname}:filterParse]: Bad filter value given!")
 				exit(2)
-		if datatype!=None and filter.symbols[symbol](datatype, value) or\
-symbol!='=' and datatype==(True, 'SKIP'):
+		if datatype!=None and filter.symbols[symbol](value, datatype):
 			vprint("Passed", end='')
 			continue
 		else:
