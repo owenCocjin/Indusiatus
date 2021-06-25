@@ -1,7 +1,7 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.3
-## Date:    2021.06.24
+## Version: 0.4
+## Date:    2021.06.25
 ## Description:    IPv6 extension header classes
 ## Notes:
 ##  - Figure out how options work.
@@ -9,7 +9,8 @@
 ## Updates:
 ##  - Made Exts check segment list for next headers
 ##  - Added data_type and name to all classes
-
+##  - Added getLL to HBHExt
+##  - Fixed printing next header name
 from .datatools import prettyHex
 from .segmentdata import *
 class HBHExt():
@@ -22,9 +23,11 @@ class HBHExt():
 		self.content=raw[2:8*(self.hel+1)]
 		self.payload=raw[8*(self.hel+1):]
 		if self.next_hdr in segment_names:
-			self.upper=segment_objs[segment_names[self.next_hdr]](self.payload)
+			self.next_name=segment_names[self.next_hdr]
+			self.upper=segment_objs[self.next_name](self.payload)
 		elif self.next_hdr in ext_header_names:
-			self.upper=ext_headers[ext_header_names[self.next_hdr]](self.payload)
+			self.next_name=ext_header_names[self.next_hdr]
+			self.upper=ext_headers[self.next_name](self.payload)
 		self.colour='\033[41m'
 		self.txt_colour='\033[91m'
 		self.text="HbH"
@@ -32,9 +35,9 @@ class HBHExt():
 		return self.toStr()
 
 	def toStr(self):
-		return f"""Next Header:        {self.next_hdr}
+		return f"""Next Header:        {self.next_hdr}({self.next_name})
 Header Ext. Length: {self.hel}
-No. of Options:     {len(self.option)}"""
+Content:            {prettyHex(self.content[:4])}"""
 
 	def getRaw(self):
 		return self.raw
@@ -80,6 +83,8 @@ No. of Options:     {len(self.option)}"""
 		return self.text
 	def setText(self, new):
 		self.text=new
+	def getLL(self):
+		return ((self.hel+1)*8, self.upper)
 
 '''
 |||    DICTS    |||

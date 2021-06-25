@@ -1,11 +1,12 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.2
-## Date:    2021.06.24
+## Version: 0.3
+## Date:    2021.06.25
 ## Description:    Segment data structure
 ## Notes:
 ## Updates:
 ##  - Added data_type and name to all classes
+##  - Removed demo class
 
 from .datatools import splitByte, prettyHex
 from .payloaddata import *
@@ -357,41 +358,6 @@ UDP Checksum: {self.udp_checksum}"""
 		self.upper=new
 	def getLL(self):
 		return (self.offset*4, self.upper)
-
-'''
-|||    DEMO    |||
-'''
-class PROTOSegment():
-	'''Everything required by a segment object.
-Everything here must be overwritten!'''
-	def __init__(self, raw):
-		self.raw=raw
-		self.offset=None  #Int division by 4; Size of header
-		self.colour=None
-		self.txt_colour=None
-		self.text=None
-
-	def getRaw(self):
-		return self.raw
-	def setRaw(self, new):
-		self.raw=new
-	def getOffset(self):
-		return self.offset
-	def setOffset(self, new):
-		self.offset=new
-	def getColour(self):
-		return self.colour
-	def setColour(self, new):
-		self.colour=new
-	def getTxt_colour(self):
-		return self.txt_colour
-	def setTxt_colour(self, new):
-		self.txt_colour=new
-	def getText(self):
-		return self.text
-	def setText(self, new):
-		self.text=new
-
 
 '''
 |||    DICTS    |||

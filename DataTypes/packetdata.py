@@ -1,13 +1,13 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.3
-## Date:    2021.06.24
+## Version: 0.4
+## Date:    2021.06.25
 ## Description:    Packet data structure
 ## Notes:
 ## Updates:
 ##  - Added UDPSegment and ETHFrame classes
 ##  - Added data_type and name to all classes
-
+##  - Fixed printing next header name
 from .segmentdata import *
 from .ipv6ext import *
 class IPPacket():
@@ -159,9 +159,11 @@ class IPv6Packet():
 		self.dst_addr=':'.join([buff[b*4:b*4+4] for b in range(len(buff)//4)])
 		self.payload=raw[40:]
 		if self.next_hdr in segment_names:
-			self.upper=segment_objs[segment_names[self.next_hdr]](self.payload)
+			self.next_name=segment_names[self.next_hdr]
+			self.upper=segment_objs[self.next_name](self.payload)
 		elif self.next_hdr in ext_header_names:
-			self.upper=ext_headers[ext_header_names[self.next_hdr]](self.payload)
+			self.next_name=ext_header_names[self.next_hdr]
+			self.upper=ext_headers[self.next_name](self.payload)
 		self.colour='\033[44m'
 		self.txt_colour='\033[94m'
 		self.text="IPv6"
@@ -171,7 +173,7 @@ class IPv6Packet():
 	def toStr(self):
 		'''Returns printable string'''
 		return f"""Version:     {self.version}
-Next Header: {self.next_hdr}({segment_names[self.next_hdr]})
+Next Header: {self.next_hdr}({self.next_name})
 Source:      [{self.src_addr}]
 Dest:        [{self.dst_addr}]"""
 
@@ -203,6 +205,10 @@ Dest:        [{self.dst_addr}]"""
 		return self.length
 	def setLength(self, new):
 		self.length=new
+	def getNext_name(self):
+		return self.next_name
+	def setNext_name(self, new):
+		self.next_name=new
 	def getNext_hdr(self):
 		return self.next_hdr
 	def setNext_hdr(self, new):
