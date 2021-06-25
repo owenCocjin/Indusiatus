@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 ## Author:  Owen Cocjin
-## Version: 0.2
-## Date:    2021.06.24
+## Version: 0.3
+## Date:    2021.06.25
 ## Description:    Packet capturer
 ## Notes:
 ##  - Need to fix IPv6 and it's stupid header shieeee!
 ##  - Also would like to know how to test IPv6 stuff
+## Updates:
+##  - Checks for invalid filters
 from ProgMenu.progmenu import MENU
 from data_writing import writeData
 import DataTypes as dtypes
@@ -28,6 +30,14 @@ def main():
 	#Filtered loop
 	if PARSER["filter"]!=None:
 		vprint(f"[|X:{vname}]: Filtering...")
+		#Check filters
+		badfilter=False
+		for f in PARSER["filter"]:
+			if not filter.checkFilter(f):
+				print(f"[|X:{vname}:filter]: Bad filter found: '{f}'!")
+				badfilter=True
+		if badfilter:
+			exit(2)
 		while True:
 			# try:
 			buff, bundle, cli=setup(sock)
