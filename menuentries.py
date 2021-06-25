@@ -1,11 +1,10 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.3
-## Date:    2021.06.24
+## Version: 0.4
+## Date:    2021.06.25
 ## Description:    Menu entries for progmenu
 ## Updates:
-##  - Updated help
-##  - Updated help
+##  - Replaced filters 'G' and 'P' with 'H'
 from ProgMenu.progmenu import EntryFlag, EntryArg
 
 def filterFunc(f):
@@ -25,9 +24,8 @@ MitM attack to modify a dictionary return to slate quizzes.
                         <t>: Data type as a single letter:
                           - A: Data (packet as a whole)
                           - D: IP destination
-                          - G: Segment type
-                          - L: Packet length
-                          - P: Packet type
+                          - H: Header type (IPV6, HBH, ICMP, etc...)
+                          - L: Frame length
                           - S: IP source
                         <v>: Value, such as the IP, data length, etc...
   -h; --help:         Prints this page
