@@ -1,34 +1,49 @@
 #!/usr/bin/python3
 ## Author:  Owen Cocjin
-## Version: 0.3
-## Date:    2021.06.25
+## Version: 0.4
+## Date:    2021.06.27
 ## Description:    Packet capturer
 ## Notes:
 ##  - Need to fix IPv6 and it's stupid header shieeee!
 ##  - Also would like to know how to test IPv6 stuff
 ## Updates:
 ##  - Checks for invalid filters
+##  - Added short print: Ignores -r and prints data header names in one row
+##  - Added -t
+##  - Added total frame counter which is printed with the date/time
 from ProgMenu.progmenu import MENU
-from data_writing import writeData
+from datawriting import writeData
 import DataTypes as dtypes
 import menuentries, filter
 import socket, time
 vprint=MENU.verboseSetup(['v', "verbose"])
 PARSER=MENU.parse(True, strict=True)
 vname=__file__[__file__.rfind('/')+1:-3]
+total_cap=[-1]  #Total captured packets
+
 def main():
 	vprint(f"[|X:{vname}:PARSER]: {PARSER}")
 	print(f"[|X:{vname}]: Starting up...")
+	#Check errors
 	if PARSER["output"]==False:  #Explicitely False; Not called returns None
 		print(f"[|X:{vname}]: Couldn't write to output file! Either the layer flag is missing or the file is unaccessible.")
 		exit(1)
+	if PARSER["frame"] not in dtypes.frame_names:
+		print(f"[|X:{vname}:setup]: Invalid frame type passed: '{PARSER['frame']}'!")
+		exit(3)
 	vprint(f"[|X:{vname}]: Setting up raw socket...")
 	sock=socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x03))  #The 3 is to read all data, incoming & outgoing
 	sock.bind((PARSER["host"], 0))
 
 	print(f"[|X:{vname}]: Listening...")
+	if PARSER["dump"]:
+		#Dump packets; Used for testing with unknown data
+		while True:
+			buff, cli=sock.recvfrom(65535)
+			print(f"[|X:{vname}:dump]: Got {len(buff)} bytes from {cli[0]}!")
+			dtypes.prettyParagraph(buff)
 	#Filtered loop
-	if PARSER["filter"]!=None:
+	elif PARSER["filter"]!=None:
 		vprint(f"[|X:{vname}]: Filtering...")
 		#Check filters
 		badfilter=False
@@ -40,23 +55,23 @@ def main():
 			exit(2)
 		while True:
 			# try:
-			buff, bundle, cli=setup(sock)
+			buff, bundle, cli, printData=setup(sock)
 			# except KeyError as e:
 			# 	input(f"[|X:{vname}:KEYERROR]: {e}")
 			# 	continue
 			if filterParse(buff, bundle):
-				print(f"\n    \033[100m[{getTime()}]\n[|X:{vname}:raw_socket]: Read {len(buff)} bytes from dev({cli[0]})! \033[0m")
+				incCap()
 				printData(bundle)
 				if PARSER["output"]:
 					writeData(PARSER["output"], bundle, PARSER["layer"])
 	else:
 		while True:
 			try:
-				buff, bundle, cli=setup(sock)
-				print(f"\n    \033[100m[{getTime()}]\n[|X:{vname}:raw_socket]: Read {len(buff)} bytes from dev({cli[0]})! \033[0m")
+				buff, bundle, cli, printData=setup(sock)
 			except KeyError as e:
 				input(f"KEYERROR: {e}")
 				continue
+			incCap()
 			printData(bundle)
 			if PARSER["output"]:
 				writeData(PARSER["output"], bundle, PARSER["layer"])
@@ -64,13 +79,24 @@ def main():
 def setup(sock):
 	'''Does all the setup.'''
 	buff, cli=sock.recvfrom(65565)
-	bundle=(dtypes.ETHFrame(buff),)  #This always exists
+	bundle=(dtypes.frame_names[PARSER["frame"]](buff),)  #This always exists
 	bundle+=(bundle[-1].getUpper(),)  #There should always be a second layer
 	while bundle[-1].getUpper()!=None:
 		bundle+=(bundle[-1].getUpper(),)
-	return buff, bundle, cli
-def printData(data):
+	if PARSER["short"]:
+		pfunc=shortPrint
+	else:
+		pfunc=dataPrint
+	return buff, bundle, cli, pfunc
+def shortPrint(data):
+	'''Print all data in a row'''
+	print(f"\033[100m[{time.strftime('%Y.%m.%d|%H:%M:%S')}]({getCap()})\033[0m ", end='')
+	for d in data:
+		print(f"{d.getColour()}{d.getName()} ", end='')
+	print('\033[0m')
+def dataPrint(data):
 	'''data is a tuple:(frame, packet, [segment])'''
+	print(f"\n    \033[100m[{time.strftime('%Y.%m.%d|%H:%M:%S')}]\n[|X:{vname}:raw_socket]: Read {len(data[0].getRaw())} bytes! ({getCap()})\033[0m")
 	if PARSER["pretty"]:
 			# toprnt_packet=packet.toStr().split('\n')
 			# toprnt_segment=segment.toStr().split('\n')
@@ -122,10 +148,11 @@ def filterParse(buff, bundle):
 			vprint("Failed", end='')
 			return False
 	return True
-
-def getTime():
-	t=time.localtime()
-	return f"{t.tm_year}.{t.tm_mon}.{t.tm_mday}/{t.tm_hour}:{t.tm_min}:{t.tm_sec}"
+def incCap():
+	'''Increment global cap counter'''
+	total_cap[0]+=1
+def getCap():
+	return f"0x{hex(total_cap[0])[2:]:>04}"
 
 
 if __name__=="__main__":
