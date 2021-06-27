@@ -1,10 +1,11 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.1
-## Date:    2021.06.23
+## Version: 0.2
+## Date:    2021.06.27
 ## Description:    Data parsing/printing tools
 ## Notes:
 ## Updates:
+##  - Added prettyParagraph
 def prettyHex(h, l=False):
 	'''Returns a printable hex string.
 h is a bytes type.
@@ -16,6 +17,20 @@ If l, return a list of hex strings instead of one long string'''
 	if l:
 		return toret.split(' ')
 	return toret
+def prettyParagraph(h):
+	'''Prints long strings of hex data.
+h is a bytes object'''
+	counter=0
+	for b in h:
+		print(f"0x{hex(b)[2:]:>02}", end='')
+		counter+=1
+		if counter%16==0:
+			print()
+			continue
+		if counter%8==0:
+			print(' ', end='')
+		print(' ', end='')
+	print()
 
 def splitByte(b):
 	'''Converts single byte to bin str.
