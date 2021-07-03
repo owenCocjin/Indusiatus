@@ -36,6 +36,7 @@ The normal program won't run when the help flag is called.
 Determines the number of layers to write to file output.
 Only used with --output.
 Layer 0 is the entire frame, layer 1 is the whole frame minus the ETH header, layer 2 is the whole frame minus the packet header, etc...
+Essentially, what will be written is everything from layer `<layer>` on, inclusive.
 If a defined layer number is higher than the current frame's number of headers, a verbose error will be thrown and the frame will be ignored.
 
 - -o; --output=<file>;
@@ -141,10 +142,23 @@ This IP is found in
 
 - __Bundle (Bundle Chain):__ In the code I refer to the fully parsed data as a "bundle". This is a tuple of headers, where each header refers to the next through the `upper` object variable.
 
-- __Layers:__ When I say layers, I am almost always referring to the specific header in the bundle. I am __NOT__ referring to the TCP/IP model layers. Sometimes this extends to the header + all data above it. Layer 0 is the entire frame, layer 1 is from the packet up, etc... 
+- __Layers:__ When I say layers, I am almost always referring to the specific header in the bundle. I am __NOT__ referring to the TCP/IP model layers. Sometimes this extends to the header + all data above it. Layer 0 is the entire frame, layer 1 is from the packet up, etc...
 
 ---
 
 ## Bugs
+### General
 - IPv6 has so far been crashing the program. I know where the issue is, but I'm not able to simulate any IPv6 packets, not even a simple ping. This is a me issue if you know how please let me know!
 - Specifying the wrong frame with --frame may crash the program.
+
+### RTAP
+- Because of the way stupid Radiotap headers are padded, changing the colour of RTAPPackets won't do anything. I've printed the whole RTAP header in raw using the RADIOFrame class' colours and length.
+- RTAP type is still new here, so it is (less than) bare-bones, but shouldn't crash from legitimate traffic.
+- Filters other than `L` don't work on RTAP. I need to update all RTAP data classes to fix this, but this is planned to be updated next!
+- When outputting RTAP to a file, if `--layer` is specified layer 1-3 will exclude the entire Radiotap header. This is due to the way I implemented RTAPPackets, where each `it_present` dword counts as a layer. The easiest way to remember this is to count the layers when pretty printing!
+
+---
+
+## Notes For Me
+- Radiotap has the dumbest formatting I've ever encountered! The padding is useless if every field's length is already known! What's the point of padding?!?!?!
+- Need to change RADIOFrame to parse just the first 4 bytes and the present dwords. Need to implement a pointer system where we check the length of the current field and if the pointer is "unaligned" then assume the next n bytes are padding until we reach an alignment.
