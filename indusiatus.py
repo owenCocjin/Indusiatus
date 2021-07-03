@@ -1,16 +1,14 @@
 #!/usr/bin/python3
 ## Author:  Owen Cocjin
-## Version: 0.4
-## Date:    2021.06.27
+## Version: 0.5
+## Date:    2021.07.03
 ## Description:    Packet capturer
 ## Notes:
 ##  - Need to fix IPv6 and it's stupid header shieeee!
 ##  - Also would like to know how to test IPv6 stuff
 ## Updates:
-##  - Checks for invalid filters
-##  - Added short print: Ignores -r and prints data header names in one row
-##  - Added -t
-##  - Added total frame counter which is printed with the date/time
+##  - Checks for invalid interfaces
+##  - Cleaned up setup and it's returns
 from ProgMenu.progmenu import MENU
 from datawriting import writeData
 import DataTypes as dtypes
@@ -33,7 +31,18 @@ def main():
 		exit(3)
 	vprint(f"[|X:{vname}]: Setting up raw socket...")
 	sock=socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x03))  #The 3 is to read all data, incoming & outgoing
-	sock.bind((PARSER["host"], 0))
+	try:
+		sock.bind((PARSER["host"], 0))
+	except OSError as e:
+		print(f"[|X:{vname}:Binding]: Interface {PARSER['host']} doesn't exist!")
+		exit(4)
+	vprint(f"[|X:{vname}:setup]: Configuring printing type...")
+	if not any((PARSER["raw"], PARSER["short"])):
+		PARSER["pretty"]=True
+	if PARSER["short"]:
+		printData=shortPrint
+	else:
+		printData=dataPrint
 
 	print(f"[|X:{vname}]: Listening...")
 	if PARSER["dump"]:
@@ -54,11 +63,7 @@ def main():
 		if badfilter:
 			exit(2)
 		while True:
-			# try:
-			buff, bundle, cli, printData=setup(sock)
-			# except KeyError as e:
-			# 	input(f"[|X:{vname}:KEYERROR]: {e}")
-			# 	continue
+			buff, bundle, cli=setup(sock)
 			if filterParse(buff, bundle):
 				incCap()
 				printData(bundle)
@@ -67,9 +72,9 @@ def main():
 	else:
 		while True:
 			try:
-				buff, bundle, cli, printData=setup(sock)
+				buff, bundle, cli=setup(sock)
 			except KeyError as e:
-				input(f"KEYERROR: {e}")
+				input(f"[|X:{vname}:KeyError]: {e}. Press enter to continue...")
 				continue
 			incCap()
 			printData(bundle)
@@ -83,11 +88,7 @@ def setup(sock):
 	bundle+=(bundle[-1].getUpper(),)  #There should always be a second layer
 	while bundle[-1].getUpper()!=None:
 		bundle+=(bundle[-1].getUpper(),)
-	if PARSER["short"]:
-		pfunc=shortPrint
-	else:
-		pfunc=dataPrint
-	return buff, bundle, cli, pfunc
+	return buff, bundle, cli
 def shortPrint(data):
 	'''Print all data in a row'''
 	print(f"\033[100m[{time.strftime('%Y.%m.%d|%H:%M:%S')}]({getCap()})\033[0m ", end='')
@@ -141,7 +142,7 @@ def filterParse(buff, bundle):
 			except ValueError:
 				print(f"[|X:{vname}:filterParse]: Bad filter value given!")
 				exit(2)
-		if datatype!=None and filter.symbols[symbol](value, datatype):
+		if datatype!=None and filter.symbols[symbol](datatype, value):
 			vprint("Passed", end='')
 			continue
 		else:
@@ -161,4 +162,4 @@ if __name__=="__main__":
 	except KeyboardInterrupt:
 		if PARSER["output"]:
 			PARSER["output"].close()
-		print("\r\033[K", end='')
+		print("\r\033[K\033[0m", end='')
