@@ -1,16 +1,18 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.2
-## Date:    2021.06.27
+## Version: 0.3
+## Date:    2021.07.03
 ## Description:    Data parsing/printing tools
 ## Notes:
 ## Updates:
-##  - Added prettyParagraph
+##  - Added revBytes (mostly used by RTAP data)
 def prettyHex(h, l=False):
 	'''Returns a printable hex string.
 h is a bytes type.
 If l, return a list of hex strings instead of one long string'''
 	toret=''
+	if h==b'':
+		return ''
 	for b in h[:-1]:
 		toret+=f"0x{hex(b)[2:]:>02} "
 	toret+=f"0x{hex(h[-1])[2:]:>02}"
@@ -31,6 +33,23 @@ h is a bytes object'''
 			print(' ', end='')
 		print(' ', end='')
 	print()
+
+def revBytes(l):
+	'''Returns a reversed bytes object'''
+	toret=list(l)
+	toret.reverse()
+	toret=''.join([f"{hex(i)[2:]:>02}" for i in toret])
+	return bytes.fromhex(toret)
+def convertSigned(i, b):
+	'''Returns a signed int, if signed bit set.
+i is the int to check.
+b is the length of i in bytes.'''
+	b=b*8
+	bits=f"{bin(i)[2:]:>0{b}}"
+	if bits[0]=='1':
+		mask=1<<(b-1)
+		return (i^mask)*-1
+	return i
 
 def splitByte(b):
 	'''Converts single byte to bin str.
