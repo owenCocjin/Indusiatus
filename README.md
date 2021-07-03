@@ -12,6 +12,10 @@ Make sure you replace "wlan0" with the device you want to capture on!
 
 ## Info
 > Filter names, and other data that might be somewhat obscure
+
+### News:
+- RTAP was a PAIN to figure out so it currently only displays the RTAP header.
+
 ### Flags:
 > Explanation of each flag in detail
 
@@ -80,7 +84,7 @@ Valid arguments for this flag are the same as the __Frame__ names under [Layer N
 
 __Frame:__
 - ETH: Ethernet Frame
-- RADIO: 802.11 RadioTap Frame
+- RTAP: 802.11 RadioTap Frame
 __Packet:__
 - IP: IPv4
 - IPV6: IPv6
@@ -96,7 +100,7 @@ __Payload:__
 - GENERIC: Generic payload data; Unidentified (by me lol)
 
 ### Filter Arguments:
-> List of all symbols and types, and a short description of each.
+> List of all symbols and types, and a short description of each
 
 __Symbols:__
 - `'!': Not Equal`.
@@ -118,11 +122,11 @@ __Types:__
 Compares to entire packet.
 This means that the user must pass bytes as _value_ as the entire frame will 99.9% of the time not be ASCII.
 
--`'D': Destination IP`.
+- `'D': Destination IP`.
 Compares to destination IP.
 This IP is found under the assumed packet layer, layer 1.
 
--`'H': Header Name`.
+- `'H': Header Name`.
 Compares to any header's name.
 These names are found by iterating through the entire bundle chain until _value_ is found.
 If there are 2 instances of the same header (which to my knowledge is rare, if not non-existent), but you are only filtering for one, you will need to use multiple filters.
@@ -138,7 +142,7 @@ This IP is found in
 
 ## Terminology
 > There are some terms I might interchange.
-> This is here just to clarify any ambiguity.\
+> This is here just to clarify any ambiguity
 
 - __Bundle (Bundle Chain):__ In the code I refer to the fully parsed data as a "bundle". This is a tuple of headers, where each header refers to the next through the `upper` object variable.
 
