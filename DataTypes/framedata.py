@@ -1,16 +1,17 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.3
-## Date:    2021.06.27
+## Version: 0.4
+## Date:    2021.07.03
 ## Description:    Frame data structure
 ## Notes:
+##  - pretty() loops as many times as the length of self.text
 ## Updates:
-##  - Added data_type and name to all classes
-##  - Added frame_names
+##  - Added RTAPFrame class
 
 from .packetdata import *
 from .payloaddata import GENERICPayload
-from .datatools import prettyHex
+from .datatools import prettyHex, revBytes, prettyParagraph
+from .Radiotap import *
 class ETHFrame():
 	def __init__(self, raw):
 		'''Socket removes preamble SFD, and CRC footer (12 bytes total) from data.'''
@@ -24,6 +25,7 @@ class ETHFrame():
 		self.type=int(raw[12:14].hex(),16)  #Type of packet data
 		self.payload=raw[14:]
 		self.upper=packet_types[self.type](self.payload)
+		self.width_inc=True  #Increment my width if needed
 		self.colour='\033[45m'
 		self.txt_colour='\033[95m'
 		self.text="ETH"
@@ -80,30 +82,43 @@ Type:       {hex(self.type)}({packet_names[self.type]})"""
 		return self.text
 	def setText(self, new):
 		self.text=new
+	def getWidthInc(self):
+		return self.width_inc
+	def setWidthInc(self, new):
+		self.width_inc=new
 	def getLL(self):
 		return (14, self.upper)
 
-class RADIOFrame():
+class RTAPFrame():
+	'''RadioTap headers are little endien order!'''
 	def __init__(self, raw):
 		self.raw=raw
-		self.data_type="RADIO"
-		self.name="RADIO"
+		self.data_type="RTAP"
+		self.name="RTAP"
 		self.revision=raw[0]
 		self.padding=raw[1]  #Used to align bytes
-		self.length=int(raw[2:4].hex(),16)  #Header length
-		self.content=raw[4:self.length]
+		self.length=int(revBytes(raw[2:4]).hex(),16)  #Header length
+		self.present_list,self.present_data=parsePresents(raw)
 		self.payload=raw[self.length:]
-		self.upper=GENERICPayload(self.payload)
+		self.upper=RTAPPacket(self.present_list, self.present_data, self.payload)
 		self.colour='\033[45m'
 		self.txt_colour='\033[95m'
+		self.width_inc=True
 		self.text="RAD"
 	def __str__(self):
 		return self.toStr()
 
 	def toStr(self):
-		return f"""Length:  {self.length}
-Content: {prettyHex(self.content[:8])}...
+		toret=f"""
+Length: {self.length}
 """
+		return toret
+	def getBmapLen(self):
+		'''Determines the length of the bitmap both as the length of the list and the total bytes.'''
+		toret=0
+		for b in self.bitmap:
+			toret+=b.getSize()
+		return (len(self.bitmap),toret)
 
 	def getRaw(self):
 		return self.raw
@@ -129,10 +144,10 @@ Content: {prettyHex(self.content[:8])}...
 		return self.length
 	def setLength(self, new):
 		self.length=new
-	def getContent(self):
-		return self.content
-	def setContent(self, new):
-		self.content=new
+	def getPresent(self):
+		return self.present
+	def setPresent(self, new):
+		self.present=new
 	def getPayload(self):
 		return self.payload
 	def setPayload(self, new):
@@ -153,8 +168,12 @@ Content: {prettyHex(self.content[:8])}...
 		return self.text
 	def setText(self, new):
 		self.text=new
+	def getWidthInc(self):
+		return self.width_inc
+	def setWidthInc(self, new):
+		self.width_inc=new
 	def getLL(self):
-		return (0, None)
+		return (self.length, self.upper)
 
 frame_names={"ETH":ETHFrame,
-"RADIO":RADIOFrame}
+"RTAP":RTAPFrame}
