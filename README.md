@@ -166,3 +166,5 @@ This IP is found in
 ## Notes For Me
 - Radiotap has the dumbest formatting I've ever encountered! The padding is useless if every field's length is already known! What's the point of padding?!?!?!
 - Need to change RADIOFrame to parse just the first 4 bytes and the present dwords. Need to implement a pointer system where we check the length of the current field and if the pointer is "unaligned" then assume the next n bytes are padding until we reach an alignment.
+- I want to add port filters!
+- With all these new filters I might need to start relying less on specific layers to check (ex. check IPs on layer 2). So far there shouldn't be an issue with this, but with the development of RTAP it might be beneficial to make the filter parsing more dynamic.
