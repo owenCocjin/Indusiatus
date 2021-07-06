@@ -1,13 +1,11 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.4
-## Date:    2021.06.25
+## Version: 0.5
+## Date:    2021.07.06
 ## Description:    Packet data structure
 ## Notes:
 ## Updates:
-##  - Added UDPSegment and ETHFrame classes
-##  - Added data_type and name to all classes
-##  - Fixed printing next header name
+##  - Changed self.src_addr and self.dst_addr to self.src_ip and self.dst_ip for IPV6Packet
 from .segmentdata import *
 from .ipv6ext import *
 class IPPacket():
@@ -154,9 +152,9 @@ class IPv6Packet():
 		self.next_hdr=raw[6]
 		self.hop_limit=raw[7]
 		buff=raw[8:24].hex()
-		self.src_addr=':'.join([buff[b*4:b*4+4] for b in range(len(buff)//4)])
+		self.src_ip=':'.join([buff[b*4:b*4+4] for b in range(len(buff)//4)])
 		buff=raw[24:40].hex()
-		self.dst_addr=':'.join([buff[b*4:b*4+4] for b in range(len(buff)//4)])
+		self.dst_ip=':'.join([buff[b*4:b*4+4] for b in range(len(buff)//4)])
 		self.payload=raw[40:]
 		if self.next_hdr in segment_names:
 			self.next_name=segment_names[self.next_hdr]
@@ -174,8 +172,8 @@ class IPv6Packet():
 		'''Returns printable string'''
 		return f"""Version:     {self.version}
 Next Header: {self.next_hdr}({self.next_name})
-Source:      [{self.src_addr}]
-Dest:        [{self.dst_addr}]"""
+Source:      [{self.src_ip}]
+Dest:        [{self.dst_ip}]"""
 
 	def getRaw(self):
 		return self.raw
@@ -221,9 +219,9 @@ Dest:        [{self.dst_addr}]"""
 		return self.hop_limit
 	def setHop_limit(self, new):
 		self.hop_limit=new
-	def getSrc_addr(self):
+	def getSrc_ip(self):
 		return self.src_addr
-	def setSrc_addr(self, new):
+	def setSrc_ip(self, new):
 		self.src_addr=new
 	def getDst_addr(self):
 		return self.dst_addr

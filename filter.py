@@ -1,24 +1,27 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.2
-## Date:    2021.06.25
+## Version: 0.3
+## Date:    2021.07.06
 ## Description:    Functions and definitions for print filter
 ## Notes:
+##  - in sym_* functions, target is the user's filter input and value is the value pulled from the packets
 ## Updates:
-##  - Updated 'G' in dtypes
+##  - Fixed all sym_* functions.
+##    A previous change to indusiatus.filterParse swapped the arguments for sym_*.
+##    This update reflects that swap.
 from DataTypes import segment_names, segment_objs, packet_names
-def sym_not(target, value):
+def sym_not(value, target):
 	'''target is not value'''
 	if type(value)==list:
 		return target not in value
 	return target!=value
-def sym_less(target, value):
+def sym_less(value, target):
 	'''target less than value'''
 	return target<value
-def sym_great(target, value):
+def sym_great(value, target):
 	'''target greater than value'''
 	return target>value
-def sym_only(target, value):
+def sym_only(value, target):
 	'''target is equal to value'''
 	if type(value)==list:
 		return target in value
@@ -33,13 +36,19 @@ def dtype(dtype, bundle):
 	if dtype=="A":  #Whole packet
 		return frame.getRaw()
 	elif dtype=="D":  #IP destination
-		return packet_names.getDst_ip()
+		try:
+			return packet_names.getDst_ip()
+		except AttributeError:
+			return 'x.x.x.x'
 	elif dtype=="H":  #Header Name
 		return [i.getName() for i in bundle]
 	elif dtype=="L":  #Length of full data
 		return len(frame.getRaw())
 	elif dtype=="S":  #IP source
-		return packet.getSrc_ip()
+		try:
+			return packet.getSrc_ip()
+		except AttributeError:
+			return 'x.x.x.x'
 	return None
 
 

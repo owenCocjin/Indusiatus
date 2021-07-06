@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 ## Author:  Owen Cocjin
-## Version: 0.5
-## Date:    2021.07.03
+## Version: 0.6
+## Date:    2021.07.06
 ## Description:    Packet capturer
 ## Notes:
 ##  - Need to fix IPv6 and it's stupid header shieeee!
 ##  - Also would like to know how to test IPv6 stuff
 ## Updates:
-##  - Checks for invalid interfaces
-##  - Cleaned up setup and it's returns
+##  - Updated filterParse to print value of filter when using verbose printing.
 from ProgMenu.progmenu import MENU
 from datawriting import writeData
 import DataTypes as dtypes
@@ -132,9 +131,9 @@ def filterParse(buff, bundle):
 	bundle_classes=[type(b) for b in bundle]
 	for f in PARSER["filter"]:
 		symbol=f[0]
-		datatype=filter.dtype(f[1].upper(), bundle)
-		value=f[2:]
-		vprint(f"\n[|X:{vname}:filterParse]: Filter: {f} vs {datatype}... ", end='')
+		datatype=filter.dtype(f[1].upper(), bundle)  #Raw packet data
+		value=f[2:]  #User passed filter value
+		vprint(f"\n[|X:{vname}:filterParse]: Filter: {f}({value}) vs {datatype}... ", end='')
 
 		if f[1] in "L":
 			try:
