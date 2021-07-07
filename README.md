@@ -6,7 +6,7 @@
 ## Usage
 Most common command is:
 ```
-$ sudo ./indusiatus.py -a "wlan0" -pr
+$ sudo ./indusiatus.py -a "wlan0" -prc
 ```
 Make sure you replace "wlan0" with the device you want to capture on!
 
@@ -18,6 +18,13 @@ Make sure you replace "wlan0" with the device you want to capture on!
 
 ### Flags:
 > Explanation of each flag in detail
+
+- -a; --host;
+Defines the interface to read packets from.
+
+- -c; --ascii;
+Print any applicable hex values as ASCII characters.
+This (for now) doesn't apply to any header "data" sections of a pretty print; This (for now) only applies to raw printing, excluding dumping.
 
 - -d; --dump;
 Dumps raw unprocessed packets to screen.
