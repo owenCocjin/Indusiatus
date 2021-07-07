@@ -1,23 +1,25 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.3
-## Date:    2021.07.03
+## Version: 0.4
+## Date:    2021.07.06
 ## Description:    Data parsing/printing tools
 ## Notes:
 ## Updates:
-##  - Added revBytes (mostly used by RTAP data)
-def prettyHex(h, l=False):
+##  - Added prettyASCII
+##  - Added "ascii" arg to prettyHex().
+##    This allows the ablity to choose to convert hex values to ascii chars
+def prettyHex(h, ascii=False):
 	'''Returns a printable hex string.
-h is a bytes type.
-If l, return a list of hex strings instead of one long string'''
+h is a bytes type.'''
 	toret=''
 	if h==b'':
 		return ''
-	for b in h[:-1]:
-		toret+=f"0x{hex(b)[2:]:>02} "
-	toret+=f"0x{hex(h[-1])[2:]:>02}"
-	if l:
-		return toret.split(' ')
+	for b in h:
+		if ascii and 0x21<=b<=0x7e:
+			toret+=f"  {chr(b)}  "
+		else:
+			toret+=f"0x{hex(b)[2:]:>02} "
+	toret=toret[:-1]
 	return toret
 def prettyParagraph(h):
 	'''Prints long strings of hex data.

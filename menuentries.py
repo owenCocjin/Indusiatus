@@ -1,12 +1,11 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.5
-## Date:    2021.06.27
+## Version: 0.6
+## Date:    2021.07.06
 ## Description:    Menu entries for progmenu
 ## Updates:
-##  - Replaced filters 'G' and 'P' with 'H'
-##  - Added -s
-##  - Added -t
+##  - Added --ascii to help
+##  - Added --ascii
 from ProgMenu.progmenu import EntryFlag, EntryArg
 
 def filterFunc(f):
@@ -14,8 +13,10 @@ def filterFunc(f):
 Split args with semi-colon.'''
 	return f.split(';')
 def helpFunc():
-	print('''    indusiatus.py -a <host device> [-dfhlopr]
+	print('''    indusiatus.py -a <host device> [-cdfhloprst]
 Network interface net to capture traffic.
+  -a; --host;        Network interface to watch
+  -c; --ascii;       Convert hex values to ASCII chars when applicable
   -d; --dump;        Dump raw packets.
                      Absolutely no processing the data will occur here
   -f; --filter=<sTv>; Filter print results.
@@ -53,6 +54,7 @@ def outputFunc(l, o):
 	return open(o, 'wb')
 
 EntryArg("host", ['a', "host"], lambda a:str(a), strict=True)
+EntryFlag("ascii", ['c', "ascii"], lambda:True, default=False)
 EntryFlag("dump", ['d', "dump"], lambda:True)
 EntryArg("filter", ['f', "filter"], filterFunc)
 EntryFlag("help", ['h', "help"], helpFunc)

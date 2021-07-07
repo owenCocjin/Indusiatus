@@ -6,6 +6,8 @@
 ## Notes:
 ##  - Need to fix IPv6 and it's stupid header shieeee!
 ##  - Also would like to know how to test IPv6 stuff
+##  - TBH, I would like to clean up the dataPrint code for printing raw.
+##    Pretty ugly since removing the "list" arg from prettyHex; Preferably reuse the newline check.
 ## Updates:
 ##  - Updated filterParse to print value of filter when using verbose printing.
 from ProgMenu.progmenu import MENU
@@ -96,6 +98,7 @@ def shortPrint(data):
 	print('\033[0m')
 def dataPrint(data):
 	'''data is a tuple:(frame, packet, [segment])'''
+	ascii=PARSER["ascii"]
 	print(f"\n    \033[100m[{time.strftime('%Y.%m.%d|%H:%M:%S')}]\n[|X:{vname}:raw_socket]: Read {len(data[0].getRaw())} bytes! ({getCap()})\033[0m")
 	if PARSER["pretty"]:
 			# toprnt_packet=packet.toStr().split('\n')
@@ -109,21 +112,37 @@ def dataPrint(data):
 
 	if PARSER["raw"]:
 		'''Treat each layer as a chain'''
-		counter=0
-		bytes=0
-		raw=data[0].getRaw()
+		newline_token=True
+		byte_count=0
+		remain=0  #Bytes remaining to create 8
+		# raw=data[0].getRaw()
 		print('\033[100m0x0000\033[0m ', end='')
 		for d in data:
 			length=d.getLL()[0]
+			raw=d.getRaw()
 			print(f"{d.getTxt_colour()}", end='')
-			for h in dtypes.prettyHex(d.getRaw()[:length], l=True):
-				print(f"{h} ", end='')
-				counter+=1
-				if counter%16==0:
-					bytes+=16
-					print(f"\n\033[0m\033[100m0x{hex(bytes)[2:]:>04}\033[0m {d.getTxt_colour()}", end='')
-				elif counter%8==0:
-					print(' ', end='')
+			if remain>0:
+				mod_length=((length-remain)//8, (length-remain)%8)
+				print(f" {dtypes.prettyHex(raw[:remain], ascii)}", end='')
+				newline_token=not newline_token
+				remain=0
+				if newline_token:
+					byte_count+=16
+					print(f"\n\033[0m\033[100m0x{hex(byte_count)[2:]:>04}\033[0m {d.getTxt_colour()}", end='')
+				else:
+					print('  ', end='')
+			else:
+				mod_length=(length//8, length%8)
+			for pointer in range(mod_length[0]):
+				#Print 8 bytes
+				print(dtypes.prettyHex(raw[pointer*8:pointer*8+8], ascii), end='  ')
+				newline_token=not newline_token
+				if newline_token:
+					byte_count+=16
+					print(f"\n\033[0m\033[100m0x{hex(byte_count)[2:]:>04}\033[0m {d.getTxt_colour()}", end='')
+			if mod_length[1]>0:
+				print(dtypes.prettyHex(raw[-mod_length[1]:], ascii), end='')
+			remain=8-mod_length[1]
 		print('\033[0m')
 
 def filterParse(buff, bundle):

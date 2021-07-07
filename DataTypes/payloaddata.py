@@ -1,13 +1,13 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.2
-## Date:    2021.06.24
+## Version: 0.3
+## Date:    2021.07.06
 ## Description:    Payload data structured
 ## Notes:
 ##    - Includes a generic payload class
 ## Updates:
-##  - Added data_type and name to all classes
-
+##  - Added data printing to GENERICPayload's __init__
+from .datatools import prettyHex
 class GENERICPayload():
 	def __init__(self, raw):
 		self.raw=raw
@@ -17,13 +17,15 @@ class GENERICPayload():
 		self.length=len(raw)  #Length in bytes
 		self.colour='\033[43m'
 		self.txt_colour='\033[93m'
-		self.text="PAY"
+		self.text="PAYLD"
 	def __str__(self):
 		return self.toStr()
 
 	def toStr(self):
 		return f"""
 Length: {self.length}
+Data:   {prettyHex(self.raw[:8])} ...
+
 """
 
 	def getRaw(self):
