@@ -1,11 +1,11 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.5
-## Date:    2021.07.06
+## Version: 0.6
+## Date:    2021.07.08
 ## Description:    Packet data structure
 ## Notes:
 ## Updates:
-##  - Changed self.src_addr and self.dst_addr to self.src_ip and self.dst_ip for IPV6Packet
+##  - Updated to reflect new Filter class
 from .segmentdata import *
 from .ipv6ext import *
 class IPPacket():
@@ -34,6 +34,8 @@ This assumes it includes the IP headers'''
 		self.dst_ip=f"{raw[16]}.{raw[17]}.{raw[18]}.{raw[19]}"
 		self.payload=raw[self.ihl*4:]  #This should practically always have data in it
 		self.upper=segment_objs[segment_names[self.proto]](self.payload)   #TCP/UDP class goes here
+		FILTER.ips(self.src_ip,self.dst_ip)
+		FILTER.addHeader(self.name)
 		self.colour='\033[44m'
 		self.txt_colour='\033[94m'
 		self.text="IPv4"
@@ -162,6 +164,8 @@ class IPv6Packet():
 		elif self.next_hdr in ext_header_names:
 			self.next_name=ext_header_names[self.next_hdr]
 			self.upper=ext_headers[self.next_name](self.payload)
+		FILTER.ips(self.src_ip,self.dst_ip)
+		FILTER.addHeader(self.name)
 		self.colour='\033[44m'
 		self.txt_colour='\033[94m'
 		self.text="IPv6"
@@ -255,6 +259,7 @@ class ARPPacket():
 		self.raw=raw
 		self.data_type="PACK"
 		self.name="ARP"
+		FILTER.addHeader(self.name)
 		self.ihl=7  #Used for compatability
 					 #Simply the length of the arp header (which has no payload)
 					 #no. of 4-byte blocks

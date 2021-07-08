@@ -1,12 +1,12 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.4
-## Date:    2021.07.03
+## Version: 0.5
+## Date:    2021.07.08
 ## Description:    Frame data structure
 ## Notes:
 ##  - pretty() loops as many times as the length of self.text
 ## Updates:
-##  - Added RTAPFrame class
+##  - Updated to reflect new Filter class
 
 from .packetdata import *
 from .payloaddata import GENERICPayload
@@ -25,6 +25,8 @@ class ETHFrame():
 		self.type=int(raw[12:14].hex(),16)  #Type of packet data
 		self.payload=raw[14:]
 		self.upper=packet_types[self.type](self.payload)
+		FILTER.macs(self.src_mac,self.dst_mac)
+		FILTER.addHeader(self.name)
 		self.width_inc=True  #Increment my width if needed
 		self.colour='\033[45m'
 		self.txt_colour='\033[95m'
@@ -95,6 +97,8 @@ class RTAPFrame():
 		self.raw=raw
 		self.data_type="RTAP"
 		self.name="RTAP"
+		FILTER.addHeader(self.name)
+		FILTER.setRaw(self.raw)
 		self.revision=raw[0]
 		self.padding=raw[1]  #Used to align bytes
 		self.length=int(revBytes(raw[2:4]).hex(),16)  #Header length

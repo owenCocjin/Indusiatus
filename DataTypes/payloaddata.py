@@ -1,18 +1,20 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.3
-## Date:    2021.07.06
+## Version: 0.4
+## Date:    2021.07.08
 ## Description:    Payload data structured
 ## Notes:
 ##    - Includes a generic payload class
 ## Updates:
-##  - Added data printing to GENERICPayload's __init__
+##  - Updated to reflect new Filter class
 from .datatools import prettyHex
+from filter import FILTER
 class GENERICPayload():
 	def __init__(self, raw):
 		self.raw=raw
 		self.data_type="PAY"
 		self.name="GENERIC"
+		FILTER.addHeader(self.name)
 		self.upper=None
 		self.length=len(raw)  #Length in bytes
 		self.colour='\033[43m'

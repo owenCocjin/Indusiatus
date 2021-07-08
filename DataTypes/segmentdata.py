@@ -1,21 +1,22 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.3
-## Date:    2021.06.25
+## Version: 0.4
+## Date:    2021.07.08
 ## Description:    Segment data structure
 ## Notes:
 ## Updates:
-##  - Added data_type and name to all classes
-##  - Removed demo class
+##  - Updated to reflect new Filter class
 
 from .datatools import splitByte, prettyHex
 from .payloaddata import *
+from filter import FILTER
 class ICMPSegment():
 	def __init__(self, raw):
 		'''Takes the raw packet'''
 		self.raw=raw
 		self.data_type="SEG"
 		self.name="ICMP"
+		FILTER.addHeader(self.name)
 		self.type=raw[0]
 		self.code=raw[1]
 		self.icmp_checksum=int(raw[2:4].hex(),16)
@@ -90,6 +91,7 @@ class IGMPSegment():
 		self.raw=raw
 		self.data_type="SEG"
 		self.name="IGMP"
+		FILTER.addHeader(self.name)
 		buff=splitByte(raw[0])
 		self.version=int(buff[:4],2)
 		self.type=int(buff[4:],2)
@@ -182,6 +184,8 @@ class TCPSegment():
 		self.window=int(raw[14:16].hex(),16)
 		self.tcp_checksum=int(raw[16:18].hex(),16)
 		self.urgent_pointer=raw[18:20]  #Not sure what this is ahahah
+		FILTER.ports(self.src_port,self.dst_port)
+		FILTER.addHeader(self.name)
 		self.colour='\033[46m'
 		self.txt_colour='\033[96m'
 		self.text="TCP"
@@ -290,6 +294,8 @@ Assumes no IP header exists.'''
 		self.length=int(raw[4:6].hex(),16)  #Length includes UDP header
 		self.udp_checksum=int(raw[6:8].hex(),16)
 		self.offset=8  #Constant 8 bytes
+		FILTER.ports(self.src_port,self.dst_port)
+		FILTER.addHeader(self.name)
 		self.colour='\033[46m'
 		self.txt_colour='\033[96m'
 		self.text="UDP"

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 ## Author:  Owen Cocjin
-## Version: 0.6
-## Date:    2021.07.06
+## Version: 0.7
+## Date:    2021.07.08
 ## Description:    Packet capturer
 ## Notes:
 ##  - Need to fix IPv6 and it's stupid header shieeee!
@@ -9,7 +9,9 @@
 ##  - TBH, I would like to clean up the dataPrint code for printing raw.
 ##    Pretty ugly since removing the "list" arg from prettyHex; Preferably reuse the newline check.
 ## Updates:
-##  - Updated filterParse to print value of filter when using verbose printing.
+##  - Updated to reflect new Filter parsing.
+##  - Changed output of --short; Fixed --short output
+##  - Added flushing to short output because sometimes output would wait for new data before printing whole line
 from ProgMenu.progmenu import MENU
 from datawriting import writeData
 import DataTypes as dtypes
@@ -70,6 +72,7 @@ def main():
 				printData(bundle)
 				if PARSER["output"]:
 					writeData(PARSER["output"], bundle, PARSER["layer"])
+			filter.FILTER.wipe()
 	else:
 		while True:
 			try:
@@ -92,10 +95,10 @@ def setup(sock):
 	return buff, bundle, cli
 def shortPrint(data):
 	'''Print all data in a row'''
-	print(f"\033[100m[{time.strftime('%Y.%m.%d|%H:%M:%S')}]({getCap()})\033[0m ", end='')
+	print(f"\n\033[100m[{time.strftime('%Y.%m.%d|%H:%M:%S')}]({getCap()})\033[0m ", end='')
 	for d in data:
 		print(f"{d.getColour()}{d.getName()} ", end='')
-	print('\033[0m')
+	print('\033[0m', end='', flush=True)
 def dataPrint(data):
 	'''data is a tuple:(frame, packet, [segment])'''
 	ascii=PARSER["ascii"]
@@ -147,10 +150,12 @@ def dataPrint(data):
 
 def filterParse(buff, bundle):
 	'''Return True if contents pass the filter'''
-	bundle_classes=[type(b) for b in bundle]
 	for f in PARSER["filter"]:
 		symbol=f[0]
-		datatype=filter.dtype(f[1].upper(), bundle)  #Raw packet data
+		if f[1] not in filter.FILTER.dtypes:
+			print(f"[|X:{vname}:filterParse]: Invalid data type: {f[0]}!")
+			exit(2)
+		datatype=filter.FILTER.dtype(f[1])
 		value=f[2:]  #User passed filter value
 		vprint(f"\n[|X:{vname}:filterParse]: Filter: {f}({value}) vs {datatype}... ", end='')
 
@@ -164,7 +169,7 @@ def filterParse(buff, bundle):
 			vprint("Passed", end='')
 			continue
 		else:
-			vprint("Failed", end='')
+			vprint("Failed", end='', flush=True)
 			return False
 	return True
 def incCap():
