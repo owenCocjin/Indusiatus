@@ -1,16 +1,14 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.4
-## Date:    2021.06.25
+## Version: 0.5
+## Date:    2021.07.12
 ## Description:    IPv6 extension header classes
 ## Notes:
 ##  - Figure out how options work.
 ##    Will probably just print them on a line with HbH instead of cluttering pretty output
 ## Updates:
-##  - Made Exts check segment list for next headers
-##  - Added data_type and name to all classes
-##  - Added getLL to HBHExt
-##  - Fixed printing next header name
+##  - Updated getRaw() for all classes.
+##    Now accepts an optional length that returns raw from [:<length specified>]
 from .datatools import prettyHex
 from .segmentdata import *
 class HBHExt():
@@ -39,8 +37,10 @@ class HBHExt():
 Header Ext. Length: {self.hel}
 Content:            {prettyHex(self.content[:4])}"""
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):

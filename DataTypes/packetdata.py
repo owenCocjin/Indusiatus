@@ -1,11 +1,12 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.6
-## Date:    2021.07.08
+## Version: 0.7
+## Date:    2021.07.12
 ## Description:    Packet data structure
 ## Notes:
 ## Updates:
-##  - Updated to reflect new Filter class
+##  - Updated getRaw() for all classes.
+##    Now accepts an optional length that returns raw from [:<length specified>]
 from .segmentdata import *
 from .ipv6ext import *
 class IPPacket():
@@ -48,8 +49,10 @@ Length:      {self.length}-{self.ihl*4}=Payload({self.length-(self.ihl*4)})
 Protocol:    {segment_names[self.proto]}({self.proto})
 IP Checksum: {self.header_checksum}"""
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):
@@ -179,8 +182,10 @@ Next Header: {self.next_hdr}({self.next_name})
 Source:      [{self.src_ip}]
 Dest:        [{self.dst_ip}]"""
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):
@@ -287,8 +292,10 @@ Protocol Type: {hex(self.proto_type)}
 Source:        [{self.src_mac}]({self.src_ip})
 Dest:          [{self.dst_mac}]({self.dst_ip})"""
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):

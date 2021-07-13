@@ -1,12 +1,14 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.5
-## Date:    2021.07.08
+## Version: 0.6
+## Date:    2021.07.12
 ## Description:    Frame data structure
 ## Notes:
 ##  - pretty() loops as many times as the length of self.text
 ## Updates:
-##  - Updated to reflect new Filter class
+##  - Forgot to make ETHFrame add raw to FILTER
+##  - Updated getRaw() for all classes.
+##    Now accepts an optional length that returns raw from [:<length specified>]
 
 from .packetdata import *
 from .payloaddata import GENERICPayload
@@ -27,6 +29,7 @@ class ETHFrame():
 		self.upper=packet_types[self.type](self.payload)
 		FILTER.macs(self.src_mac,self.dst_mac)
 		FILTER.addHeader(self.name)
+		FILTER.setRaw(self.raw)
 		self.width_inc=True  #Increment my width if needed
 		self.colour='\033[45m'
 		self.txt_colour='\033[95m'
@@ -40,8 +43,10 @@ class ETHFrame():
 Dest MAC:   [{self.dst_mac}]
 Type:       {hex(self.type)}({packet_names[self.type]})"""
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):
@@ -124,8 +129,10 @@ Length: {self.length}
 			toret+=b.getSize()
 		return (len(self.bitmap),toret)
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):

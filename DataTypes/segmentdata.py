@@ -1,11 +1,12 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.4
-## Date:    2021.07.08
+## Version: 0.5
+## Date:    2021.07.12
 ## Description:    Segment data structure
 ## Notes:
 ## Updates:
-##  - Updated to reflect new Filter class
+##  - Updated getRaw() for all classes.
+##    Now accepts an optional length that returns raw from [:<length specified>]
 
 from .datatools import splitByte, prettyHex
 from .payloaddata import *
@@ -35,8 +36,10 @@ Code:          {hex(self.code)}
 ICMP Checksum: {self.icmp_checksum}
 Content:       {prettyHex(self.content[:8])}..."""
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):
@@ -112,8 +115,10 @@ Type:          {self.type}
 Group Addr:    [{self.group_addr}]
 IGMP Checksum: {self.igmp_checksum}"""
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):
@@ -207,8 +212,10 @@ class TCPSegment():
 Length:       {self.pay_len}=Payload({self.pay_len})
 TCP Checksum: {self.tcp_checksum}"""
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):
@@ -312,8 +319,10 @@ Assumes no IP header exists.'''
 Length: {self.length}-8=Payload({self.length-8})
 UDP Checksum: {self.udp_checksum}"""
 
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getData_type(self):

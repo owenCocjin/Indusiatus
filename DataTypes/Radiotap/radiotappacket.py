@@ -1,13 +1,15 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.1
-## Date:    2021.07.03
+## Version: 0.2
+## Date:    2021.07.12
 ## Description:    Radiotap packet class
 ## Notes:
 ##  - RTAPPacket doesn't process any bitmaps; Just returns the data as an int
 ##  - RTAPFrame cuts out the RTAP header from raw.
 ##    Because raw isn't logically used we can just pass the raw data down until self.upper isn't RTAPPacket
 ## Updates:
+##  - Updated getRaw() for all classes.
+##    Now accepts an optional length that returns raw from [:<length specified>]
 from ..payloaddata import *
 from .radiotap import *
 from ..datatools import revBytes, convertSigned, prettyHex
@@ -76,8 +78,10 @@ Data:   {prettyHex(self.content[0])} ..."""
 		return self.bitbundle
 	def setBitbundle(self, new):
 		self.bitbundle=new
-	def getRaw(self):
-		return self.raw
+	def getRaw(self, l=None):
+		if l==None:
+			return self.raw
+		return self.raw[:l]
 	def setRaw(self, new):
 		self.raw=new
 	def getName(self):
