@@ -118,11 +118,11 @@ Matches any frame that agrees with _type_ and _value_.
 
 - `'>': Greater Than`.
 Matches any frame that's _type_ is greater than _value_.
-Only works with 'L' _type_.
+Only works with 'LPQ' _type_.
 
 - `'<': Less Than`.
 Matches any frame that's _type_ is less than _value_.
-Only works with 'L' _type_.
+Only works with 'LPQ' _type_.
 
 __Types:__
 - `'A': Data`.
@@ -131,7 +131,6 @@ This means that the user must pass bytes as _value_ as the entire frame will 99.
 
 - `'D': Destination IP`.
 Compares to destination IP.
-This IP is found under the assumed packet layer, layer 1.
 
 - `'H': Header Name`.
 Compares to any header's name.
@@ -141,9 +140,22 @@ If there are 2 instances of the same header (which to my knowledge is rare, if n
 - `'L': Data Length`.
 Compares to the full length of the frame.
 
+- `'M': Source mac address`.
+Compares to source mac address.
+
+- `'N': Destination mac address`.
+Compares to destination mac address.
+
+- `'P': Source port`.
+Compares to source port.
+Will ignore frames that don't have a port (ex. ICMP).
+
+- `'Q': Destination port`.
+Compares to destination port.
+Will ignore frames that don't have a port (ex. ICMP).
+
 - `'S': Source IP`.
 Compares to the source IP.
-This IP is found in
 
 ---
 
