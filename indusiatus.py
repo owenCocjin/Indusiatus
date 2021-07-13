@@ -1,17 +1,14 @@
 #!/usr/bin/python3
 ## Author:  Owen Cocjin
-## Version: 0.7
-## Date:    2021.07.08
+## Version: 0.8
+## Date:    2021.07.12
 ## Description:    Packet capturer
 ## Notes:
 ##  - Need to fix IPv6 and it's stupid header shieeee!
 ##  - Also would like to know how to test IPv6 stuff
-##  - TBH, I would like to clean up the dataPrint code for printing raw.
-##    Pretty ugly since removing the "list" arg from prettyHex; Preferably reuse the newline check.
 ## Updates:
-##  - Updated to reflect new Filter parsing.
-##  - Changed output of --short; Fixed --short output
-##  - Added flushing to short output because sometimes output would wait for new data before printing whole line
+##  - Fixed printing raw.
+##    It was horribly done last time; Skipped quite a few bytes.
 from ProgMenu.progmenu import MENU
 from datawriting import writeData
 import DataTypes as dtypes
@@ -115,37 +112,43 @@ def dataPrint(data):
 
 	if PARSER["raw"]:
 		'''Treat each layer as a chain'''
-		newline_token=True
 		byte_count=0
-		remain=0  #Bytes remaining to create 8
 		# raw=data[0].getRaw()
-		print('\033[100m0x0000\033[0m ', end='')
+		print(f"\033[100m0x0000\033[0m", end='')
 		for d in data:
 			length=d.getLL()[0]
-			raw=d.getRaw()
+			raw=d.getRaw(length)
 			print(f"{d.getTxt_colour()}", end='')
-			if remain>0:
-				mod_length=((length-remain)//8, (length-remain)%8)
+			#Check for holes in the line and fill them
+			remain=8-byte_count%8
+			if remain<8:
+				#Print as many bytes as is required to fill the space.
 				print(f" {dtypes.prettyHex(raw[:remain], ascii)}", end='')
-				newline_token=not newline_token
-				remain=0
-				if newline_token:
-					byte_count+=16
-					print(f"\n\033[0m\033[100m0x{hex(byte_count)[2:]:>04}\033[0m {d.getTxt_colour()}", end='')
-				else:
-					print('  ', end='')
-			else:
-				mod_length=(length//8, length%8)
-			for pointer in range(mod_length[0]):
-				#Print 8 bytes
-				print(dtypes.prettyHex(raw[pointer*8:pointer*8+8], ascii), end='  ')
-				newline_token=not newline_token
-				if newline_token:
-					byte_count+=16
-					print(f"\n\033[0m\033[100m0x{hex(byte_count)[2:]:>04}\033[0m {d.getTxt_colour()}", end='')
-			if mod_length[1]>0:
-				print(dtypes.prettyHex(raw[-mod_length[1]:], ascii), end='')
-			remain=8-mod_length[1]
+				if length<remain:  #Not enough bytes to fill. Recalculate remain
+					remain-=length
+					byte_count+=length
+					continue
+				else:  #Adjust raw and continue
+					length-=remain
+					byte_count+=remain
+					raw=raw[remain:]
+					if byte_count%16==0:
+						print(f"\n\033[0m\033[100m0x{hex(byte_count)[2:]:>04}\033[0m{d.getTxt_colour()}", end='')
+					elif byte_count%8==0:  #Can assume that the whole line is filled
+						print(" ", end='')
+			#Calculate multiples of 8 and mod
+			mod_length=[length//8, length%8]
+			for p in range(mod_length[0]):
+				print(f" {dtypes.prettyHex(raw[p*8:p*8+8], ascii)}", end='')
+				byte_count+=8
+				if byte_count%16==0:
+					print(f"\n\033[0m\033[100m0x{hex(byte_count)[2:]:>04}\033[0m{d.getTxt_colour()}", end='')
+				else:  #Can assume that the whole line is filled
+					print(" ", end='')
+			if mod_length[1]>0:  #Extra bytes left; Print them
+				print(f" {dtypes.prettyHex(raw[mod_length[0]*8:])}", end='')
+				byte_count+=mod_length[1]
+
 		print('\033[0m')
 
 def filterParse(buff, bundle):
@@ -159,7 +162,7 @@ def filterParse(buff, bundle):
 		value=f[2:]  #User passed filter value
 		vprint(f"\n[|X:{vname}:filterParse]: Filter: {f}({value}) vs {datatype}... ", end='')
 
-		if f[1] in "L":
+		if f[1] in "LPQ":  #Convert to int
 			try:
 				value=int(value)
 			except ValueError:
@@ -186,3 +189,5 @@ if __name__=="__main__":
 		if PARSER["output"]:
 			PARSER["output"].close()
 		print("\r\033[K\033[0m", end='')
+	except OSError as e:
+		print(f"[|X:{vname}]: Error! Network most likely disconnected!")
