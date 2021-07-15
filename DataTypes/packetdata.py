@@ -1,12 +1,11 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.7
-## Date:    2021.07.12
+## Version: 0.8
+## Date:    2021.07.15
 ## Description:    Packet data structure
 ## Notes:
 ## Updates:
-##  - Updated getRaw() for all classes.
-##    Now accepts an optional length that returns raw from [:<length specified>]
+##  - Updated IPPacket self.* a bit
 from .segmentdata import *
 from .ipv6ext import *
 class IPPacket():
@@ -18,16 +17,16 @@ This assumes it includes the IP headers'''
 		self.name="IP"
 		buff=splitByte(raw[0])
 		self.version=int(buff[:4],2)
-		self.ihl=int(buff[4:],2)   #number of 4-byte blocks, min of 5
+		self.ihl=int(buff[4:],2)   #Number of 4-byte blocks, min of 5
 		buff=splitByte(raw[1])
-		self.tos=int(buff[:8],2)
+		self.tos=int(buff[:7],2)
 		self.ecn=int(buff[7],2)
-		self.length=int(raw[2:4].hex(),16)
+		self.length=int(raw[2:4].hex(),16)  #Length of packet, including IP header
 		self.id=int(raw[4:6].hex(),16)
 		buff=splitByte(raw[6])
 		buff+=splitByte(raw[7])
-		self.flags=buff[:2]
-		self.frag_offset=int(buff[2:],2)
+		self.flags=buff[:3]
+		self.frag_offset=int(buff[3:],2)
 		self.ttl=raw[8]
 		self.proto=raw[9]
 		self.header_checksum=int(raw[10:12].hex(),16)
