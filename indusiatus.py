@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 ## Author:  Owen Cocjin
-## Version: 0.8
-## Date:    2021.07.12
+## Version: 0.8.1
+## Date:    2021.07.15
 ## Description:    Packet capturer
 ## Notes:
 ##  - Need to fix IPv6 and it's stupid header shieeee!
@@ -9,6 +9,7 @@
 ## Updates:
 ##  - Fixed printing raw.
 ##    It was horribly done last time; Skipped quite a few bytes.
+##  - Fixed last line of raw print sometimes not printing in ASCII
 from ProgMenu.progmenu import MENU
 from datawriting import writeData
 import DataTypes as dtypes
@@ -146,7 +147,7 @@ def dataPrint(data):
 				else:  #Can assume that the whole line is filled
 					print(" ", end='')
 			if mod_length[1]>0:  #Extra bytes left; Print them
-				print(f" {dtypes.prettyHex(raw[mod_length[0]*8:])}", end='')
+				print(f" {dtypes.prettyHex(raw[mod_length[0]*8:], ascii)}", end='')
 				byte_count+=mod_length[1]
 
 		print('\033[0m')
