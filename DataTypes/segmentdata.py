@@ -1,16 +1,20 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.5
-## Date:    2021.07.12
+## Version: 0.6
+## Date:    2021.07.15
 ## Description:    Segment data structure
 ## Notes:
+##  - ICMPSegment.messages excludes deprecated types
+##  - NOTE IPv6:ICMP:
+##    IPv6 has (currently) unsupported types.
+##    For now I'm just ignoring the additional parsing because they have the same first 4 bytes as IPv4.
 ## Updates:
-##  - Updated getRaw() for all classes.
-##    Now accepts an optional length that returns raw from [:<length specified>]
-
+##  - Added ICMPLib
+##  - Updated ICMPSegment to reflect new ICMPLib
 from .datatools import splitByte, prettyHex
 from .payloaddata import *
 from filter import FILTER
+from .ICMPLib.icmplib import *
 class ICMPSegment():
 	def __init__(self, raw):
 		'''Takes the raw packet'''
@@ -21,20 +25,39 @@ class ICMPSegment():
 		self.type=raw[0]
 		self.code=raw[1]
 		self.icmp_checksum=int(raw[2:4].hex(),16)
-		self.content=raw[4:]
-		self.offset=1  #Used for compatibility; 4-byte blocks
+		#Check if segment is an error or message and fill below as needed
+		self.offset=4  #In bytes
+		self.identifier=None
+		self.seq_num=None
+### NOTE "IPv6:ICMP" START
+		if self.type in icmp_types:  #Ignore unsupported ICMP (for the moment)
+			self.subheader=icmp_funcs[icmp_types[self.type]](self.raw[4:])
+			self.offset=self.subheader["length"]  #Used for compatibility
+			self.content=raw[self.offset:]
+		else:
+			self.subheader={"Content":f"{prettyHex(self.raw[4:12])} ..."}
+### NOTE "IPv6:ICMP" END
+		self.content=raw[self.offset:]
 		self.colour='\033[46m'
 		self.txt_colour='\033[96m'
-		self.text="ICMP"
+		subhdrlen=len(self.subheader)-2
+		if subhdrlen>0:
+			self.text=' '*(subhdrlen//2)+"ICMP"+' '*(subhdrlen//2)
+			if subhdrlen%2==1:
+				self.text+=' '
+		else:
+			self.text="ICMP"
 		self.upper=GENERICPayload(self.content)  #For compatability
 	def __str__(self):
 		return self.toStr()
 
 	def toStr(self):
-		return f"""Type:          {hex(self.type)}
-Code:          {hex(self.code)}
-ICMP Checksum: {self.icmp_checksum}
-Content:       {prettyHex(self.content[:8])}..."""
+		toret=f"""Type/Code:       {hex(self.type)}/{hex(self.code)}
+ICMP Checksum:   {self.icmp_checksum}"""
+		#Check for any content and just print it all
+		for d in self.subheader:
+			toret+=f"\n{d}:{' '*(16-len(d))}{self.subheader[d]}"
+		return toret
 
 	def getRaw(self, l=None):
 		if l==None:
@@ -62,6 +85,14 @@ Content:       {prettyHex(self.content[:8])}..."""
 		return self.icmp_checksum
 	def setIcmp_checksum(self, new):
 		self.icmp_checksum=new
+	def getIdentifier(self):
+		return self.identifier
+	def setIdentifier(self, new):
+		self.identifier=new
+	def getSeq_num(self):
+		return self.seq_num
+	def setSeq_num(self, new):
+		self.seq_num=new
 	def getContent(self):
 		return self.content
 	def setContent(self, new):
@@ -87,7 +118,7 @@ Content:       {prettyHex(self.content[:8])}..."""
 	def setUpper(self, new):  #For compatability
 		self.upper=new
 	def getLL(self):
-		return (self.offset*4, self.upper)
+		return (self.offset, self.upper)
 
 class IGMPSegment():
 	def __init__(self, raw):
