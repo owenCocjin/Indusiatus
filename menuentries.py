@@ -1,11 +1,12 @@
 ##
 ## Author:  Owen Cocjin
-## Version: 0.6
-## Date:    2021.07.06
+## Version: 0.6.1
+## Date:    2021.07.16
 ## Description:    Menu entries for progmenu
 ## Updates:
 ##  - Added --ascii to help
 ##  - Added --ascii
+##  - Updated -h
 from ProgMenu.progmenu import EntryFlag, EntryArg
 
 def filterFunc(f):
@@ -31,6 +32,10 @@ Network interface net to capture traffic.
                           - D: IP destination
                           - H: Header type (IPV6, HBH, ICMP, etc...)
                           - L: Frame length
+                          - M: Source MAC address
+                          - N: Destination MAC address
+                          - P: Source port
+                          - Q: Destination port
                           - S: IP source
                         <v>: Value, such as the IP, data length, etc...
   -h; --help;         Prints this page
